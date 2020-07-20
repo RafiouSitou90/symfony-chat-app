@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Entity\Traits\Timestamps;
 use App\Repository\UsersRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -63,7 +65,23 @@ class Users implements UserInterface
      */
     private bool $isVerified = false;
 
-    public function getId(): string
+    /**
+     * @ORM\OneToMany(targetEntity=Messages::class, mappedBy="user")
+     */
+    private $messages;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ConversationsUsers::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $conversationsUsers;
+
+    public function __construct()
+    {
+        $this->messages = new ArrayCollection();
+        $this->conversationsUsers = new ArrayCollection();
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -155,6 +173,68 @@ class Users implements UserInterface
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Messages[]
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Messages $message): self
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages[] = $message;
+            $message->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Messages $message): self
+    {
+        if ($this->messages->contains($message)) {
+            $this->messages->removeElement($message);
+            // set the owning side to null (unless already changed)
+            if ($message->getUser() === $this) {
+                $message->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ConversationsUsers[]
+     */
+    public function getConversationsUsers(): Collection
+    {
+        return $this->conversationsUsers;
+    }
+
+    public function addConversationsUser(ConversationsUsers $conversationsUser): self
+    {
+        if (!$this->conversationsUsers->contains($conversationsUser)) {
+            $this->conversationsUsers[] = $conversationsUser;
+            $conversationsUser->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConversationsUser(ConversationsUsers $conversationsUser): self
+    {
+        if ($this->conversationsUsers->contains($conversationsUser)) {
+            $this->conversationsUsers->removeElement($conversationsUser);
+            // set the owning side to null (unless already changed)
+            if ($conversationsUser->getUser() === $this) {
+                $conversationsUser->setUser(null);
+            }
+        }
 
         return $this;
     }

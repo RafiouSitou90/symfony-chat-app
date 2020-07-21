@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\WebLink\Link;
 
 /**
  * Class ConversationsController
@@ -132,9 +133,9 @@ class ConversationsController extends AbstractController
 
         $conversations = $this->conversationsRepository->findConversationsByUserId($current_user->getId());
 
-//        $hubUrl = $this->getParameter('mercure.default_hub');
+        $hubUrl = $this->getParameter('mercure.default_hub');
 
-//        $this->addLink($request, new Link('mercure', $hubUrl));
+        $this->addLink($request, new Link('mercure', $hubUrl));
 
         return $this->json($conversations, Response::HTTP_OK, [], []);
     }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Conversations;
+use App\Entity\ConversationsUsers;
 use App\Entity\Messages;
 use App\Entity\Users;
 use App\Repository\ConversationsUsersRepository;
@@ -15,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -84,9 +86,6 @@ class MessagesController extends AbstractController
     {
         $this->denyAccessUnlessGranted('view', $conversation);
 
-        /** @var Users $current_user */
-        $current_user = $this->getUser();
-
         $messages = $this->messagesRepository->findMessagesByConversationId(
             $conversation->getId()
         );
@@ -108,10 +107,11 @@ class MessagesController extends AbstractController
     public function create (Request $request, Conversations $conversation)
     {
         /** @var Users $user */
-        $user = $this->getUser();
-//        $user = $this->usersRepository->find('dc2b0f21-cad6-11ea-806c-00ff004d54d3'); // $this->getUser();
+//        $user = $this->getUser();
+        $user = $this->usersRepository->find('dc2b0f21-cad6-11ea-806c-00ff004d54d3'); // $this->getUser();
 //        $user = $this->usersRepository->find('f9a0dc94-cad5-11ea-806c-00ff004d54d3'); // $this->getUser();
 
+        /** @var ConversationsUsers $recipient */
         $recipient = $this->conversationsUsersRepository->findByConversationIdAndUserId(
             $conversation->getId(),
             $user->getId()
@@ -140,11 +140,20 @@ class MessagesController extends AbstractController
         }
 
 
-//        $messageSerialized = $this->serializer->serialize($message, 'json', [
-//            'attributes' => [...self::ATTRIBUTES_TO_SERIALIZE, 'conversation' => ['id']]
-//        ]);
+        $messageSerialized = $this->serializer->serialize($message, 'json', [
+            'attributes' => [...self::ATTRIBUTES_TO_SERIALIZE, 'conversation' => ['id']]
+        ]);
 
-        $this->entityManager->flush();
+        $update = new Update(
+            [
+                sprintf("/conversations/%s", $conversation->getId()),
+                sprintf("/conversations/%s", $recipient->getUser()->getUsername()),
+            ],
+            $messageSerialized,
+            true,
+        );
+
+        $this->dispatchMessage($update);
 
         return $this->json($message, Response::HTTP_CREATED, [], [
             'attributes' => self::ATTRIBUTES_TO_SERIALIZE

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ConversationsUsers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -48,6 +49,12 @@ class ConversationsUsersRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * @param string $conversationId
+     * @param string $userId
+     * @return ConversationsUsers|null
+     * @throws NonUniqueResultException
+     */
     public function findByConversationIdAndUserId(string $conversationId, string $userId)
     {
         $qb = $this->createQueryBuilder('cu');

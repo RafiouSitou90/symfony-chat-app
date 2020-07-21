@@ -4,4 +4,15 @@
 
 {% block body %}
     <h1>Hello ! ✅</h1>
+
+    {% for user in users %}
+        {% if app.user.username != user.username %}
+            <form action="{{ path('app_conversations_create') }}" method="post">
+                <input type="hidden" value="{{ user.id }}" name="second_user">
+                <button type="submit">Create conversation with {{ user.username }}</button>
+            </form>
+            <br>
+        {% endif %}
+    {% endfor %}
+
 {% endblock %}

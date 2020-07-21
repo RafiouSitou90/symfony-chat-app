@@ -7,10 +7,11 @@ use App\Repository\ConversationsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Index;
 
 /**
  * @ORM\Entity(repositoryClass=ConversationsRepository::class)
- * @ORM\Table(name="tab_conversations")
+ * @ORM\Table(name="tab_conversations", indexes={@Index(name="last_message_id_index", columns={"last_message_id"})})
  *
  * @ORM\HasLifecycleCallbacks()
  */
@@ -36,6 +37,12 @@ class Conversations
      * @ORM\OneToMany(targetEntity=ConversationsUsers::class, mappedBy="conversation", orphanRemoval=true)
      */
     private $conversationsUsers;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Messages::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(name="last_message_id", referencedColumnName="id")
+     */
+    private $lastMessage = null;
 
     public function __construct()
     {
@@ -106,6 +113,18 @@ class Conversations
                 $conversationsUser->setConversation(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLastMessage(): ?Messages
+    {
+        return $this->lastMessage;
+    }
+
+    public function setLastMessage(?Messages $lastMessage): self
+    {
+        $this->lastMessage = $lastMessage;
 
         return $this;
     }

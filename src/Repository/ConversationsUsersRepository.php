@@ -47,4 +47,23 @@ class ConversationsUsersRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findByConversationIdAndUserId(string $conversationId, string $userId)
+    {
+        $qb = $this->createQueryBuilder('cu');
+        $qb
+            ->where(
+                $qb->expr()->andX(
+                    $qb->expr()->eq('cu.conversation', ':conversationId'),
+                    $qb->expr()->neq('cu.user', ':userId')
+                )
+            )
+            ->setParameters([
+                'conversationId' => $conversationId,
+                'userId' => $userId
+            ])
+
+        ;
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }

@@ -47,4 +47,18 @@ class MessagesRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findMessagesByConversationId(string $conversationId)
+    {
+        $qb = $this->createQueryBuilder('m');
+        $qb
+            ->select('m.id', 'm.content', 'm.createdAt', 'm.updatedAt', 'messageUser.id as userId', 'messageUser.username')
+            ->innerJoin('m.user', 'messageUser')
+            ->innerJoin('m.conversations', 'messageConversation')
+            ->where('m.conversations = :conversationId')
+            ->setParameter('conversationId', $conversationId)
+            ->orderBy('m.createdAt', 'ASC')
+        ;
+        return $qb->getQuery()->getResult();
+    }
 }

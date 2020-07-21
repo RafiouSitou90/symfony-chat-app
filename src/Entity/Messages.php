@@ -5,10 +5,11 @@ namespace App\Entity;
 use App\Entity\Traits\Timestamps;
 use App\Repository\MessagesRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Index;
 
 /**
  * @ORM\Entity(repositoryClass=MessagesRepository::class)
- * @ORM\Table(name="tab_messages")
+ * @ORM\Table(name="tab_messages", indexes={@Index(name="created_at_index", columns={"created_at"})})
  *
  * @ORM\HasLifecycleCallbacks()
  */
@@ -38,6 +39,7 @@ class Messages
     /**
      * @ORM\ManyToOne(targetEntity=Users::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     *
      */
     private $user;
 
